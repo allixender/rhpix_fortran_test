@@ -8,7 +8,7 @@ copyright = "2020 Jane Doe"
 [ library ]
 source-dir="src"
 
-# [[ executable ]]
-# name="mainApp"
-# source-dir="src"
-# main="main.f90"
+[[ executable ]]
+name="mainApp"
+source-dir="src"
+main="main.f90"

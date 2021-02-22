@@ -1,7 +1,14 @@
 from ctypes import CDLL, POINTER, c_int, c_double, byref, pointer
 import numpy as np
+import platform
 
-librhpix = CDLL("../build2/librhpix.so")
+if platform.system() == "Linux":
+    librhpix = CDLL("../build2/librhpix.so")
+elif platform.system() == "Windows":
+    librhpix = CDLL("../build2/librhpix.dll")
+elif platform.system() == "Darwin":
+    librhpix = CDLL("../build2/librhpix.dylib")
+
 lam=-185.0
 c_lam=c_double(-185.0)
 radians=0
