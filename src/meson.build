@@ -8,7 +8,7 @@ endif
 
 deps = []
 
-rhpix_modules = ['mod_rhpix_utils.f90']
+rhpix_modules = ['mod_rhpix_utils.f90', 'mod_rhpix_ellipsoids.f90']
 
 rhpix = shared_library('rhpix',
                       rhpix_modules,

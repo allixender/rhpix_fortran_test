@@ -21,26 +21,26 @@ contains
         rad2deg = radians * (180./pi_64)
     end function
 
-    subroutine wrap_longitude(lam, radians) bind(c, name='c_wrap_longitude')
+    subroutine wrap_longitude(lam, is_radians) bind(c, name='c_wrap_longitude')
         real(C_DOUBLE), intent(in out) :: lam
-        integer(c_int), intent(in) :: radians
+        integer(c_int), intent(in) :: is_radians
         real(C_DOUBLE) :: res
         real(C_DOUBLE) :: t_lam
 
         ! Given a point p on the unit circle at angle `lam` from the positive
         ! x-axis, return its angle theta in the range -pi <= theta < pi.
-        ! If `radians` = True, then `lam` and the output are given in radians.
+        ! If `is_radians` = True, then `lam` and the output are given in radians.
         ! Otherwise, they are given in degrees.
         !
         ! EXAMPLES::
         !
-        !     >>> wrap_longitude(2*pi + pi, radians=True)
+        !     >>> wrap_longitude(2*pi + pi, is_radians=True)
         !     -3.141592653589793
         !
         ! NOTES:: .. Issue #1 was ..
         !     -3.1415926535897931
 
-        if (radians <= 0) then
+        if (is_radians <= 0) then
             t_lam = deg2rad(lam)
         else
             t_lam = lam
@@ -55,7 +55,7 @@ contains
             res = t_lam
         end if
 
-        if (radians <= 0) then
+        if (is_radians <= 0) then
             ! Convert to degrees.
             res = rad2deg(res)
         end if
@@ -63,10 +63,10 @@ contains
     end subroutine
 
 
-    function wrap_latitude(phi, radians) bind(c, name='c_wrap_latitude') result(res)
+    function wrap_latitude(phi, is_radians) bind(c, name='c_wrap_latitude') result(res)
 
         real(C_DOUBLE), intent(in) :: phi
-        integer(c_int), intent(in) :: radians
+        integer(c_int), intent(in) :: is_radians
         real(C_DOUBLE) :: res
         real(C_DOUBLE) :: t_phi
 
@@ -76,15 +76,15 @@ contains
         ! If p lies in the left half of the circle, then reflect it through the
         ! origin, and return the angle of the reflected point that lies in the
         ! interval [-pi/2, pi/2].
-        ! If `radians` = True, then `phi` and the output are given in radians.
+        ! If `is_radians` = True, then `phi` and the output are given in radians.
         ! Otherwise, they are given in degrees.
         !
         ! EXAMPLES::
         !
-        !     >>> wrap_latitude(45, radians=False)
+        !     >>> wrap_latitude(45, is_radians=False)
         !     45.0
 
-        if (radians <= 0) then
+        if (is_radians <= 0) then
             ! # Convert to radians.
             t_phi = deg2rad(phi)
         else
@@ -100,18 +100,18 @@ contains
             res = t_phi - sign(1.0_real64, t_phi) * pi_64
         end if
 
-        if (radians <= 0) then
+        if (is_radians <= 0) then
             !# Convert to degrees.
             res = rad2deg(res)
         end if
     end function
 
 
-    function auth_lat(phi, e, inverse, radians) bind(c, name='c_auth_lat') result(res)
+    function auth_lat(phi, e, inverse, is_radians) bind(c, name='c_auth_lat') result(res)
 
         real(C_DOUBLE), intent(in) :: phi
         real(C_DOUBLE), intent(in) :: e
-        integer(c_int), intent(in) :: radians
+        integer(c_int), intent(in) :: is_radians
         integer(c_int), intent(in) :: inverse
         real(C_DOUBLE) :: res
         real(C_DOUBLE) :: t_phi
@@ -125,7 +125,7 @@ contains
         !
         ! EXAMPLES::
         !
-        !     >>> beta = auth_lat(pi/4, 0.5, radians=True)
+        !     >>> beta = auth_lat(pi/4, 0.5, is_radians=True)
         !     >>> print(my_round(beta, 15))
         !     0.68951821243544
 
@@ -138,7 +138,7 @@ contains
             return
         end if
 
-        if (radians <= 0.0_real64) then
+        if (is_radians <= 0.0_real64) then
             ! Convert to radians to do calculations below.
             t_phi = deg2rad(phi)
         else
@@ -163,7 +163,7 @@ contains
                 sin(2 * t_phi) + (23 * e ** 4 / 360.0_real64 + 251 * e ** 6 / 3780.0_real64) * sin(4 * t_phi) + &
                 (761 * e ** 6 / 45360.0_real64) * sin(6 * t_phi) )
         end if
-        if (radians <= 0) then
+        if (is_radians <= 0) then
             !# Convert to degrees.
             res = rad2deg(res)
         end if
