@@ -1,7 +1,9 @@
 #include <stdio.h>
 
+// external declaration/prototype to call from fortran
 void c_wrap_longitude(double *lam, int *radians);
 
+// external declaration/prototype to call from fortran
 double c_wrap_latitude(double *phi, int *radians);
 
 int main() {
