@@ -107,7 +107,232 @@ contains
         end if
     end subroutine
 
+    subroutine pi_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return pi if `self.radians` = True and 180 otherwise.
+        ! """
+        ! if self.radians:
+        !     return pi
+        ! else:
+        !     return 180.0
+        end subroutine
 
+    ! self, lam_min=None, lam_max=None, phi_min=None, phi_max=None
+    subroutine random_point_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return a point (given in geodetic coordinates) sampled uniformly at
+        ! random from the section of this ellipsoid with longitude in the range
+        ! `lam_min <= lam < lam_max` and latitude in the range
+        ! `phi_min <= phi < phi_max`.
+        ! But avoid the poles.
+        !
+        ! EXAMPLES::
+        !
+        !    >>> E = UNIT_SPHERE
+        !    >>> print(E.random_point()) # doctest: +SKIP
+        !    (-1.0999574573422948, 0.21029104897701129)
+        !
+        ! """
+        ! PI = self.pi()
+        ! if lam_min is None:
+        !     lam_min = -PI
+        ! if lam_max is None:
+        !     lam_max = PI
+        ! if phi_min is None:
+        !     phi_min = -PI / 2
+        ! if phi_max is None:
+        !     phi_max = PI / 2
+        ! if not self.radians:
+        !     # Convert to radians.
+        !     lam_min, lam_max, phi_min, phi_max = deg2rad(
+        !         [lam_min, lam_max, phi_min, phi_max]
+        !     )
+        ! # Pick a longitude.
+        ! while True:
+        !     u = uniform(0, 1)
+        !     lam = (lam_max - lam_min) * u + lam_min
+        !     # Don't include lam_max.
+        !     if lam < lam_max:
+        !         # Success.
+        !         break
+        ! # Pick a latitude.
+        ! delta = pi / 360
+        ! while True:
+        !     v = uniform(0, 1)
+        !     if self.sphere:
+        !         phi = arcsin((sin(phi_max) - sin(phi_min)) * v + sin(phi_min))
+        !     else:
+        !         # Sample from the authalic sphere.
+        !         # The map from the ellipsoid to the authalic sphere is
+        !         # an equiareal diffeomorphism.
+        !         # So a uniform distribution on the authalic sphere gives
+        !         # rise to a uniform distribution on the ellipsoid.
+        !         beta0 = auth_lat(phi_min, e=self.e, radians=True)
+        !         beta1 = auth_lat(phi_max, e=self.e, radians=True)
+        !         beta = arcsin((sin(beta1) - sin(beta0)) * v + sin(beta0))
+        !         phi = auth_lat(beta, e=self.e, radians=True, inverse=True)
+        !     # Avoid the poles.
+        !     if abs(phi) <= pi / 2 - delta:
+        !         # Success.
+        !         break
+        ! if not self.radians:
+        !     # Convert back to degrees.
+        !     lam, phi = rad2deg([lam, phi])
+        ! return lam, phi
+        end subroutine
+
+    ! (self, n=90
+    subroutine lattice_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return a 2n x n square lattice of longitude-latitude points.
+        !
+        ! EXAMPLES::
+        !
+        !     >>> E = UNIT_SPHERE
+        !     >>> for p in E.lattice(n=3):
+        !     ...     print(p)
+        !     (-150.0, -60.0)
+        !     (-150.0, 0.0)
+        !     (-150.0, 60.0)
+        !     (-90.0, -60.0)
+        !     (-90.0, 0.0)
+        !     (-90.0, 60.0)
+        !     (-30.0, -60.0)
+        !     (-30.0, 0.0)
+        !     (-30.0, 60.0)
+        !     (30.0, -60.0)
+        !     (30.0, 0.0)
+        !     (30.0, 60.0)
+        !     (90.0, -60.0)
+        !     (90.0, 0.0)
+        !     (90.0, 60.0)
+        !     (150.0, -60.0)
+        !     (150.0, 0.0)
+        !     (150.0, 60.0)
+        !
+        ! """
+        ! PI = self.pi()
+        ! # Longitudinal and latitudinal spacing between points.
+        ! delta = PI / n
+        ! return [
+        !     (-PI + delta * (0.5 + i), -PI / 2 + delta * (0.5 + j))
+        !     for i in range(2 * n)
+        !     for j in range(n)
+        ! ]
+        end subroutine
+
+    ! (self, lam, n=200
+    subroutine meridian_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return a list of `n` equispaced longitude-latitude
+        ! points lying along the meridian of longitude `lam`.
+        ! Avoid the poles.
+        ! """
+        ! PI = self.pi()
+        ! delta = PI / n
+        ! return [(lam, -PI / 2 + delta * (0.5 + i)) for i in range(n)]
+        end subroutine
+
+    ! (self, phi, n=200
+    subroutine parallel_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return a list of `2*n` equispaced longitude-latitude
+        ! points lying along the parallel of latitude `phi`.
+        ! """
+        ! PI = self.pi()
+        ! delta = PI / n
+        ! return [(-PI + delta * (0.5 + i), phi) for i in range(2 * n)]
+        end subroutine
+
+    ! (self, n=400, spacing=None
+    subroutine graticule_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return a list of longitude-latitude points sampled from a
+        ! longitude-latitude graticule on this ellipsoid with the given
+        ! spacing between meridians and between parallels.
+        ! The number of points on longitude and latitude per pi radians is `n`.
+        ! The spacing should be specified in the angle units used for this
+        ! ellipsoid.
+        ! If `spacing=None`, then a default spacing of pi/16 radians will be set.
+        !
+        ! EXAMPLES::
+        !
+        !     >>> E = UNIT_SPHERE
+        !     >>> print(len(E.graticule(n=400)))
+        !     25600
+        !
+        ! """
+        ! PI = self.pi()
+        ! result = []
+        ! # delta = PI/n
+        ! # Set default spacing.
+        ! if spacing is None:
+        !     spacing = PI / 16
+        ! # Longitude lines.
+        ! lam = -PI
+        ! while lam < PI:
+        !     # result.extend([(lam, -PI/2 + delta*(0.5 + i)) for i in range(n)])
+        !     result.extend(self.meridian(lam, n))
+        !     lam += spacing
+        ! # Latitude lines. Avoid the poles.
+        ! eps = PI / 360
+        ! phi = -PI / 2 + eps
+        ! while phi < PI / 2:
+        !     # result.extend([(-PI + delta*(0.5 + i), phi) for i in range(2*n)])
+        !     result.extend(self.parallel(phi, n))
+        !     phi += spacing
+        ! return result
+        end subroutine
+
+    ! (self, filename
+    subroutine get_points_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Return a list of longitude-latitude points contained in
+        ! the file with filename `filename`.
+        ! Assume the file is a text file containing at most one
+        ! longitude-latitude point per line with the coordinates separated by
+        ! whitespace and angles given in degrees.
+        ! """
+        ! result = []
+        ! for line in open(filename, "rb"):
+        !     if line[0] not in ["-", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+        !         # Ignore line.
+        !         continue
+        !     else:
+        !         # Split coordinate pair on whitespace.
+        !         p = [float(x) for x in line.split()]
+        !         result.append(p)
+        ! if self.radians:
+        !     # Convert to radians.
+        !     result = [deg2rad(p) for p in result]
+        ! return result
+        end subroutine
+
+    ! (self, lam, phi
+    subroutine xyz_ellipsoid(params)
+      type(ellipsoid), intent(in out) :: params
+        ! """
+        ! Given a point on this ellipsoid with longitude-latitude coordinates
+        ! `(lam, phi)`, return the point's 3D rectangular coordinates.
+        !
+        ! EXAMPLES::
+        !
+        !     >>> E = UNIT_SPHERE
+        !     >>> print(my_round(E.xyz(0, 45), 15))
+        !     (0.707106781186548, 0.0, 0.707106781186548)
+        !
+        ! NOTES:: .. Issue #1 was ..
+        !     (0.70710678118654802, 0.0, 0.70710678118654802)
+        !
+        ! """
+        end subroutine
 
 
 end module mod_rhpix_ellipsoids
