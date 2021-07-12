@@ -10,5 +10,10 @@ source-dir="src"
 
 [[ executable ]]
 name="mainApp"
-source-dir="src"
+source-dir="app"
 main="main.f90"
+
+[[ test ]]
+name="test1"
+source-dir="test"
+main="test1.c"
